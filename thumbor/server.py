@@ -45,7 +45,7 @@ def get_config(config_path):
 
 
 def configure_log(config, log_level):
-    if (config.THUMBOR_LOG_CONFIG and config.THUMBOR_LOG_CONFIG != ''):
+    if config.THUMBOR_LOG_CONFIG and config.THUMBOR_LOG_CONFIG != '':
         logging.config.dictConfig(config.THUMBOR_LOG_CONFIG)
     else:
         logging.basicConfig(
@@ -127,7 +127,7 @@ def main(arguments=None):
 
     server_parameters = get_server_parameters(arguments)
     config = get_config(server_parameters.config_path)
-    configure_log(config, config.LOG_LEVEL)
+    configure_log(config, config.LOG_LEVEL.upper())
 
     importer = get_importer(config)
 
