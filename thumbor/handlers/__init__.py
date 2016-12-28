@@ -129,7 +129,8 @@ class BaseHandler(tornado.web.RequestHandler):
         """
         try:
             result = yield self._fetch(
-                self.context.request.image_url
+                self.context.request.image_url,
+                self.context.request.buffer
             )
 
             if not result.successful:
@@ -526,7 +527,7 @@ class BaseHandler(tornado.web.RequestHandler):
         return is_valid
 
     @gen.coroutine
-    def _fetch(self, url):
+    def _fetch(self, url, bodyBuffer):
         """
 
         :param url:
@@ -538,10 +539,14 @@ class BaseHandler(tornado.web.RequestHandler):
 
         storage = self.context.modules.storage
 
-        yield self.acquire_url_lock(url)
+        if url != 'post':
+            yield self.acquire_url_lock(url)
 
         try:
-            fetch_result.buffer = yield gen.maybe_future(storage.get(url))
+            if url != 'post':
+                fetch_result.buffer = yield gen.maybe_future(storage.get(url))
+            else:
+                fetch_result.buffer = bodyBuffer
             mime = None
 
             if fetch_result.buffer is not None:
