@@ -10,10 +10,13 @@
 
 import logging
 
-try:
-    import cv
-except ImportError:
-    import cv2.cv as cv
+# try:
+#     import cv2 as cv
+# except ImportError:
+#     import cv2.cv as cv
+import cv2
+import numpy as np
+
 import math
 
 import tornado.gen
@@ -46,11 +49,11 @@ class Filter(BaseFilter):
         self.watermark_engine.enable_alpha()
 
         mode, data = self.watermark_engine.image_data_as_rgb()
-        imgdata = _alpha.apply(mode,
-                               self.alpha,
-                               data)
+        # imgdata = _alpha.apply(mode,
+        #                        self.alpha,
+        #                        data)
 
-        self.watermark_engine.set_image_data(imgdata)
+        self.watermark_engine.set_image_data(data)
 
         mos_x = self.x == 'repeat'
         mos_y = self.y == 'repeat'
@@ -133,7 +136,7 @@ class Filter(BaseFilter):
         contents = [self.name, self.date, self.address]
         self.x = x
         self.y = y
-        self.alpha = u'0'
+        # self.alpha = u'0'
         self.callback = callback
         self.extension = PIC_TYPE
         self.watermark_engine = self.context.modules.engine.__class__(self.context)
@@ -208,7 +211,11 @@ class Filter(BaseFilter):
                         font=font,
                     )
                     cur_line += 1
-            buffer = cv.EncodeImage(PIC_TYPE, cv.fromarray(array(watermark))).tostring()
+
+            # buffer = cv.EncodeImage(PIC_TYPE, cv.fromarray(array(watermark))).tostring()
+            # use opencv3 api
+            buffer = cv2.imencode(PIC_TYPE, np.array(watermark))[1].tostring()
+
             return buffer
         except Exception, err:
             logging.error(err)

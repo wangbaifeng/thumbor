@@ -199,6 +199,8 @@ class RequestParameters:
         if request:
             self.url = request.path
             self.accepts_webp = 'image/webp' in request.headers.get('Accept', '')
+            if request.body:
+                self.buffer = request.body
 
     def int_or_0(self, value):
         return 0 if value is None else int(value)

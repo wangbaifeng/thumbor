@@ -92,5 +92,9 @@ class ImagingHandler(ContextHandler):
         self.check_image(kw)
 
     @tornado.web.asynchronous
+    def post(self, **kw):
+        self.check_image(kw)
+
+    @tornado.web.asynchronous
     def head(self, **kw):
         self.check_image(kw)

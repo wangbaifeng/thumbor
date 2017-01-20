@@ -13,6 +13,7 @@ import functools
 import datetime
 import re
 import pytz
+import schedule
 import traceback
 
 import tornado.web
@@ -128,7 +129,8 @@ class BaseHandler(tornado.web.RequestHandler):
         """
         try:
             result = yield self._fetch(
-                self.context.request.image_url
+                self.context.request.image_url,
+                self.context.request.buffer
             )
 
             if not result.successful:
@@ -377,11 +379,18 @@ class BaseHandler(tornado.web.RequestHandler):
             context.config.RESULT_STORAGE_STORES_UNSAFE or not context.request.unsafe)
 
         def inner(future):
-            results, content_type = future.result()
-            self._write_results_to_client(context, results, content_type)
+            result = future.result()
+            if result:
+                results, content_type = future.result()
+                if results:
+                    self._write_results_to_client(context, results, content_type)
 
-            if should_store:
-                self._store_results(context, results)
+                    if should_store:
+                        self._store_results(context, results)
+                else:
+                    self._error(500)
+
+                schedule.run_pending()
 
         self.context.thread_pool.queue(
             operation=functools.partial(self._load_results, context),
@@ -518,7 +527,7 @@ class BaseHandler(tornado.web.RequestHandler):
         return is_valid
 
     @gen.coroutine
-    def _fetch(self, url):
+    def _fetch(self, url, bodyBuffer):
         """
 
         :param url:
@@ -530,10 +539,14 @@ class BaseHandler(tornado.web.RequestHandler):
 
         storage = self.context.modules.storage
 
-        yield self.acquire_url_lock(url)
+        if url != 'post':
+            yield self.acquire_url_lock(url)
 
         try:
-            fetch_result.buffer = yield gen.maybe_future(storage.get(url))
+            if url != 'post':
+                fetch_result.buffer = yield gen.maybe_future(storage.get(url))
+            else:
+                fetch_result.buffer = bodyBuffer
             mime = None
 
             if fetch_result.buffer is not None:
