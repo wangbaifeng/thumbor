@@ -17,10 +17,14 @@ from io import BytesIO
 
 from PIL import Image, ImageFile, ImageDraw, ImageSequence, JpegImagePlugin
 
-try:
-    from cv2 import cv
-except:
-    cv = None
+# use opencv3 api
+import cv2
+import numpy as np
+
+# try:
+#     from cv2 import cv
+# except:
+#     cv = None
 
 from thumbor.engines import BaseEngine
 from thumbor.engines.extensions.pil import GifWriter
@@ -28,10 +32,10 @@ from thumbor.utils import logger, deprecated, EXTENSION
 
 try:
     from thumbor.ext.filters import _composite
+
     FILTERS_AVAILABLE = True
 except ImportError:
     FILTERS_AVAILABLE = False
-
 
 FORMATS = {
     '.tif': 'PNG',  # serve tif as png
@@ -184,7 +188,8 @@ class Engine(BaseEngine):
                 qtables_config = self.context.config.PILLOW_JPEG_QTABLES
 
                 if subsampling_config is not None or qtables_config is not None:
-                    options['quality'] = 0  # can't use 'keep' here as Pillow would try to extract qtables/subsampling and fail
+                    options[
+                        'quality'] = 0  # can't use 'keep' here as Pillow would try to extract qtables/subsampling and fail
                     orig_subsampling = self.subsampling
                     orig_qtables = self.qtables
 
@@ -193,7 +198,8 @@ class Engine(BaseEngine):
                     else:
                         options['subsampling'] = subsampling_config
 
-                    if (qtables_config == 'keep' or qtables_config is None) and (orig_qtables and 2 <= len(orig_qtables) <= 4):
+                    if (qtables_config == 'keep' or qtables_config is None) and (
+                        orig_qtables and 2 <= len(orig_qtables) <= 4):
                         options['qtables'] = orig_qtables
                     else:
                         options['qtables'] = qtables_config
@@ -283,7 +289,7 @@ class Engine(BaseEngine):
         return results
 
     def convert_tif_to_png(self, buffer):
-        if not cv:
+        if not cv2:
             msg = """[PILEngine] convert_tif_to_png failed: opencv not imported"""
             logger.error(msg)
             return buffer
@@ -292,10 +298,14 @@ class Engine(BaseEngine):
         # requires 3rd parameter buf which could not be created in python. Could be replaced with these lines:
         # img = cv2.imdecode(numpy.fromstring(buffer, dtype='uint16'), -1)
         # buffer = cv2.imencode('.png', img)[1].tostring()
-        mat_data = cv.CreateMatHeader(1, len(buffer), cv.CV_8UC1)
-        cv.SetData(mat_data, buffer, len(buffer))
-        img = cv.DecodeImage(mat_data, -1)
-        buffer = cv.EncodeImage(".png", img).tostring()
+
+        img = cv2.imdecode(np.fromstring(buffer, dtype='uint16'), -1)
+        buffer = cv2.imencode('.png', img)[1].tostring()
+
+        # mat_data = cv.CreateMatHeader(1, len(buffer), cv.CV_8UC1)
+        # cv.SetData(mat_data, buffer, len(buffer))
+        # img = cv.DecodeImage(mat_data, -1)
+        # buffer = cv.EncodeImage(".png", img).tostring()
 
         mime = self.get_mimetype(buffer)
         self.extension = EXTENSION.get(mime, '.jpg')
