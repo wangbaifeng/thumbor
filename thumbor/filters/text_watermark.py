@@ -177,6 +177,7 @@ class Filter(BaseFilter):
 
     def watermark(self, contents, fontFile):
         try:
+            logging.debug("contexts is: %s", contents)
             sz = self.engine.size
             self.watermark_width = sz[0]
             line_num = 0  # 总行数
@@ -214,6 +215,7 @@ class Filter(BaseFilter):
 
             # buffer = cv.EncodeImage(PIC_TYPE, cv.fromarray(array(watermark))).tostring()
             # use opencv3 api
+            logging.debug("watermark is: %s", watermark)
             buffer = cv2.imencode(PIC_TYPE, np.array(watermark))[1].tostring()
 
             return buffer
