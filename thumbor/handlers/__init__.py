@@ -182,6 +182,9 @@ class BaseHandler(tornado.web.RequestHandler):
             engine = self.context.request.engine
             try:
                 engine.load(buffer, self.context.request.extension)
+                if engine.image is None:
+                    self._error(400, "This image is damaged!")
+                    return
             except Exception:
                 self._error(504)
                 return
