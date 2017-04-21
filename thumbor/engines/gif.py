@@ -12,6 +12,8 @@ from io import BytesIO
 from PIL import Image
 import re
 from subprocess import Popen, PIPE
+from tempfile import NamedTemporaryFile
+import os
 from thumbor.engines.pil import Engine as PILEngine
 from thumbor.utils import logger
 
@@ -23,6 +25,8 @@ GIFSICLE_IMAGE_COUNT_REGEX = re.compile(r'(?:(\d+)\simage)')
 class GifSicleError(RuntimeError):
     pass
 
+class Gif2WebpError(RuntimeError):
+    pass
 
 class Engine(PILEngine):
     @property
@@ -114,20 +118,57 @@ class Engine(PILEngine):
         self.operations = []
 
     def read(self, extension=None, quality=None):
-        self.flush_operations()
+        extension = extension or self.extension
 
-        # Make sure gifsicle produced a valid gif.
-        try:
-            with BytesIO(self.buffer) as buff:
-                Image.open(buff).verify()
-        except Exception:
-            self.context.metrics.incr('gif_engine.no_output')
-            logger.error("[GIF_ENGINE] invalid gif engine result for url `{url}`.".format(
-                url=self.context.request.url
-            ))
-            raise
+        if extension == '.webp':
+            if quality is None:
+                quality = self.context.config.QUALITY;
 
-        return self.buffer
+            gif_file = NamedTemporaryFile(suffix='.gif', delete=False);
+            gif_file.write(self.buffer);
+            gif_file.close()
+
+            output_suffix = '.webp'
+            result_file = NamedTemporaryFile(suffix=output_suffix, delete=False)
+            try:
+                logger.debug('convert {0} to {1}'.format(gif_file.name, result_file.name))
+                result_file.close()
+                command = [
+                    self.context.config.GIF2WEB_PATH,
+                    gif_file.name,
+                    '-o', result_file.name
+                ]
+                gif_2_webp_process = Popen(command, stdout=PIPE, stdin=PIPE, stderr=PIPE)
+                gif_2_webp_process.communicate()
+                if gif_2_webp_process.returncode != 0:
+                    raise Gif2WebpError(
+                        'gif2webp command returned errorlevel {0} for command "{1}"'.format(
+                            gif_2_webp_process.returncode, ' '.join(
+                                command +
+                                [self.context.request.url]
+                            )
+                        )
+                    )
+                with open(result_file.name, 'r') as f:
+                    return f.read()
+            finally:
+                os.unlink(result_file.name)
+
+        else:
+            self.flush_operations()
+
+            # Make sure gifsicle produced a valid gif.
+            try:
+                with BytesIO(self.buffer) as buff:
+                    Image.open(buff).verify()
+            except Exception:
+                self.context.metrics.incr('gif_engine.no_output')
+                logger.error("[GIF_ENGINE] invalid gif engine result for url `{url}`.".format(
+                    url=self.context.request.url
+                ))
+                raise
+
+            return self.buffer
 
     def convert_to_grayscale(self):
         self.operations.append('--use-colormap gray')

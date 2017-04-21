@@ -83,8 +83,13 @@ Config.define(
     'Indicates whether thumbor should enable the EXPERIMENTAL support for animated gifs.', 'Imaging')
 
 Config.define(
-    'USE_GIFSICLE_ENGINE', False,
+    'USE_GIFSICLE_ENGINE', True,
     'Indicates whether thumbor should use gifsicle engine. Please note that smart cropping and filters are not '
+    'supported for gifs using gifsicle (but won\'t give an error).', 'Imaging')
+
+Config.define(
+    'USE_WEBP_ENGINE', True,
+    'Indicates whether thumbor should use pil engine. Please note that smart cropping and filters are not '
     'supported for gifs using gifsicle (but won\'t give an error).', 'Imaging')
 
 Config.define(
@@ -106,7 +111,7 @@ Config.define(
     'The loader thumbor should use to load the original image. This must be the full name of a python module ' +
     '(python must be able to import it)', 'Extensibility')
 Config.define(
-    'STORAGE', 'thumbor.storages.file_storage',
+    'STORAGE', 'thumbor.storages.no_storage',
     'The file storage thumbor should use to store original images. This must be the full name of a python module ' +
     '(python must be able to import it)', 'Extensibility')
 Config.define(
@@ -123,6 +128,11 @@ Config.define(
     'The gif engine thumbor should use to perform image operations. This must be the full name of a ' +
     'python module (python must be able to import it)', 'Extensibility')
 
+Config.define(
+    'WEBP_ENGINE', 'thumbor.engines.pil',
+    'The webp engine thumbor should use to perform image operations. This must be the full name of a ' +
+    'python module (python must be able to import it)', 'Extensibility')
+
 Config.define('SECURITY_KEY', 'MY_SECURE_KEY', 'The security key thumbor uses to sign image URLs', 'Security')
 
 Config.define('ALLOW_UNSAFE_URL', True, 'Indicates if the /unsafe URL should be available', 'Security')
@@ -130,7 +140,8 @@ Config.define('ALLOW_OLD_URLS', True, 'Indicates if encrypted (old style) URLs s
 Config.define('ENABLE_ETAGS', True, 'Enables automatically generated etags', 'HTTP')
 Config.define('MAX_ID_LENGTH', 32, 'Set maximum id length for images when stored', 'Storage')
 Config.define('GC_INTERVAL', 60, 'Set garbage collection interval in seconds', 'Performance')
-Config.define('LOG_LEVEL', 'warning', 'Set log level', 'Log Level')
+Config.define('LOG_LEVEL', 'debug', 'Set log level', 'Log Level')
+Config.define('GIF2WEB_PATH', None, 'Convert a GIF image to WebP', 'Extensibility')
 # METRICS OPTIONS
 Config.define('STATSD_HOST', None, 'Host to send statsd instrumentation to', 'Metrics')
 Config.define('STATSD_PORT', 8125, 'Port to send statsd instrumentation to', 'Metrics')

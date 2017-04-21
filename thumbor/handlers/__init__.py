@@ -240,7 +240,8 @@ class BaseHandler(tornado.web.RequestHandler):
     def after_transform(self, context):
         finish_callback = functools.partial(self.finish_request, context)
         if context.request.extension == '.gif' and context.config.USE_GIFSICLE_ENGINE:
-            finish_callback()
+            # finish_callback()
+            self.filters_runner.apply_filters(thumbor.filters.PHASE_POST_TRANSFORM, finish_callback)
         else:
             self.filters_runner.apply_filters(thumbor.filters.PHASE_POST_TRANSFORM, finish_callback)
 
@@ -602,6 +603,9 @@ class BaseHandler(tornado.web.RequestHandler):
         try:
             if mime == 'image/gif' and self.context.config.USE_GIFSICLE_ENGINE:
                 self.context.request.engine = self.context.modules.gif_engine
+            # if request image/webp use pil engine
+            if mime == 'image/webp' and self.context.config.USE_WEBP_ENGINE:
+                self.context.request.engine = self.context.modules.webp_engine
             else:
                 self.context.request.engine = self.context.modules.engine
 
