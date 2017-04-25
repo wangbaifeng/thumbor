@@ -563,6 +563,8 @@ class BaseHandler(tornado.web.RequestHandler):
                 self.context.request.extension = EXTENSION.get(mime, '.jpg')
                 if mime == 'image/gif' and self.context.config.USE_GIFSICLE_ENGINE:
                     self.context.request.engine = self.context.modules.gif_engine
+                elif mime == 'image/webp' and self.context.config.USE_WEBP_ENGINE:
+                    self.context.request.engine = self.context.modules.webp_engine
                 else:
                     self.context.request.engine = self.context.modules.engine
 
@@ -604,7 +606,7 @@ class BaseHandler(tornado.web.RequestHandler):
             if mime == 'image/gif' and self.context.config.USE_GIFSICLE_ENGINE:
                 self.context.request.engine = self.context.modules.gif_engine
             # if request image/webp use pil engine
-            if mime == 'image/webp' and self.context.config.USE_WEBP_ENGINE:
+            elif mime == 'image/webp' and self.context.config.USE_WEBP_ENGINE:
                 self.context.request.engine = self.context.modules.webp_engine
             else:
                 self.context.request.engine = self.context.modules.engine
@@ -706,6 +708,8 @@ class ImageApiHandler(ContextHandler):
 
         if mime == 'image/gif' and self.context.config.USE_GIFSICLE_ENGINE:
             engine = self.context.modules.gif_engine
+        elif mime == 'image/webp' and self.context.config.USE_WEBP_ENGINE:
+            self.context.request.engine = self.context.modules.webp_engine
         else:
             engine = self.context.modules.engine
 

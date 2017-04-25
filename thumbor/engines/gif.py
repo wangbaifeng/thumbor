@@ -135,6 +135,7 @@ class Engine(PILEngine):
                 result_file.close()
                 command = [
                     self.context.config.GIF2WEB_PATH,
+                    '-q', str(quality),
                     gif_file.name,
                     '-o', result_file.name
                 ]
