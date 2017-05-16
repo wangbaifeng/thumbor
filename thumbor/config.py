@@ -19,6 +19,7 @@ from thumbor import __version__
 home = expanduser("~")
 BASE_DIR = dirname(abspath(__file__))
 THUMBOR_LOG_PATH = os.getenv('THUMBOR_LOG_PATH', '/usr/src/app/log/fs-thumbor.log')
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 dictConfig = {
     # 基本设置
     'version': 1,  # 日志级别
@@ -73,7 +74,7 @@ dictConfig = {
     #     },
     # },
     'root': {
-        'level': 'INFO',
+        'level': LOG_LEVEL,
         'handlers': ['console', 'info_file_handler']
     }
 }
