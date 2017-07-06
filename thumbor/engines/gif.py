@@ -125,7 +125,7 @@ class Engine(PILEngine):
                 quality = self.context.config.QUALITY;
 
             gif_file = NamedTemporaryFile(suffix='.gif', delete=False);
-            gif_file.write(self.buffer);
+            gif_file.write(self.buffer)
             gif_file.close()
 
             output_suffix = '.webp'
@@ -153,6 +153,7 @@ class Engine(PILEngine):
                 with open(result_file.name, 'r') as f:
                     return f.read()
             finally:
+                os.unlink(gif_file.name)
                 os.unlink(result_file.name)
 
         else:
