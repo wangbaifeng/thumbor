@@ -92,6 +92,7 @@ class BaseEngine(object):
         self.context = context
         self.image = None
         self.extension = None
+        self.buffer = None
         self.source_width = None
         self.source_height = None
         self.icc_profile = None
@@ -151,7 +152,8 @@ class BaseEngine(object):
 
     def load(self, buffer, extension):
         self.extension = extension
-
+        if extension == '.png':
+            self.buffer = buffer
         if extension is None:
             mime = self.get_mimetype(buffer)
             self.extension = EXTENSION.get(mime, '.jpg')
