@@ -202,8 +202,8 @@ Config.define('ENABLE_ETAGS', True, 'Enables automatically generated etags', 'HT
 Config.define('MAX_ID_LENGTH', 32, 'Set maximum id length for images when stored', 'Storage')
 Config.define('GC_INTERVAL', 60, 'Set garbage collection interval in seconds', 'Performance')
 Config.define('LOG_LEVEL', 'debug', 'Set log level', 'Log Level')
-Config.define('CWEB_PATH', None, 'Convert a GIF image to WebP', 'Extensibility')
-Config.define('PNG2WEB_PATH', None, 'Convert a GIF image to WebP', 'Extensibility')
+Config.define('GIF2WEB_PATH', None, 'Convert a GIF image to WebP', 'Extensibility')
+Config.define('CWEB_PATH', None, 'Google webP conversion tools', 'Extensibility')
 # METRICS OPTIONS
 Config.define('STATSD_HOST', None, 'Host to send statsd instrumentation to', 'Metrics')
 Config.define('STATSD_PORT', 8125, 'Port to send statsd instrumentation to', 'Metrics')
