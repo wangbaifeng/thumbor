@@ -93,6 +93,7 @@ class BaseEngine(object):
         self.image = None
         self.extension = None
         self.buffer = None
+        self.command = [self.context.config.CWEB_PATH]
         self.source_width = None
         self.source_height = None
         self.icc_profile = None
