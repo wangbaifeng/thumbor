@@ -561,7 +561,7 @@ class BaseHandler(tornado.web.RequestHandler):
                 self.context.metrics.incr('storage.hit')
                 mime = BaseEngine.get_mimetype(fetch_result.buffer)
                 self.context.request.extension = EXTENSION.get(mime, '.jpg')
-                if mime == 'image/gif' and self.context.config.USE_GIFSICLE_ENGINE:
+                if (mime == 'image/gif' or mime == 'image/heif') and self.context.config.USE_GIFSICLE_ENGINE:
                     self.context.request.engine = self.context.modules.gif_engine
                 elif mime == 'image/webp' and self.context.config.USE_WEBP_ENGINE:
                     self.context.request.engine = self.context.modules.webp_engine

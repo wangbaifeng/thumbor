@@ -12,13 +12,13 @@ import os
 import logging
 from functools import wraps
 
-
 CONTENT_TYPE = {
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
     '.gif': 'image/gif',
     '.png': 'image/png',
     '.webp': 'image/webp',
+    '.heif': 'image/heif',
     '.mp4': 'video/mp4',
     '.webm': 'video/webm',
     '.svg': 'image/svg+xml',
@@ -31,18 +31,17 @@ EXTENSION = {
     'image/gif': '.gif',
     'image/png': '.png',
     'image/webp': '.webp',
+    'image/heif': '.heif',
     'video/mp4': '.mp4',
     'video/webm': '.webm',
     'image/svg+xml': '.svg',
     'image/tiff': '.tif'
 }
 
-
 logger = logging.getLogger('thumbor')
 
 
 class on_exception(object):
-
     def __init__(self, callback, exception_class=Exception):
         self.callback = callback
         self.exception_class = exception_class
@@ -75,7 +74,6 @@ class on_exception(object):
 
 
 class deprecated(object):
-
     def __init__(self, msg=None):
         self.msg = ": {0}".format(msg) if msg else "."
 
@@ -86,6 +84,7 @@ class deprecated(object):
                 "Deprecated function {0}{1}".format(func.__name__, self.msg)
             )
             return func(*args, **kwargs)
+
         return new_func
 
 

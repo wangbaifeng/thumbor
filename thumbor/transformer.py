@@ -31,6 +31,9 @@ class Transformer(object):
         self.target_width = None
 
     def _calculate_target_dimensions(self):
+        # 针对HEIF做的处理
+        if self.engine.extension == '.heif':
+            return
         source_width, source_height = self.engine.size
         source_width = float(source_width)
         source_height = float(source_height)
@@ -67,6 +70,9 @@ class Transformer(object):
         return int(self.target_width), int(self.target_height)
 
     def adjust_focal_points(self):
+        # 针对HEIF做的处理
+        if self.engine.extension == '.heif':
+            return
         source_width, source_height = self.engine.size
 
         self.focal_points = None
@@ -76,7 +82,8 @@ class Transformer(object):
                 self.focal_points = []
                 crop = self.context.request.crop
                 for point in self.context.request.focal_points:
-                    if point.x < crop['left'] or point.x > crop['right'] or point.y < crop['top'] or point.y > crop['bottom']:
+                    if point.x < crop['left'] or point.x > crop['right'] or point.y < crop['top'] or point.y > crop[
+                        'bottom']:
                         continue
                     point.x -= crop['left'] or 0
                     point.y -= crop['top'] or 0
@@ -206,6 +213,9 @@ class Transformer(object):
 
         if self.context.request.debug:
             self.debug()
+        # 针对HEIF做的处理
+        elif self.engine.extension == '.heif':
+            return
         else:
             if self.context.request.fit_in:
                 self.fit_in_resize()
@@ -222,6 +232,7 @@ class Transformer(object):
 
         The actual work happens in self.img_operation_worker
         """
+
         def inner(future):
             self.done_callback()
 
@@ -315,8 +326,8 @@ class Transformer(object):
 
         # invert width and height if image orientation is not the same as request orientation and need adaptive
         if self.context.request.adaptive and (
-            (source_width - source_height < 0 and self.target_width - self.target_height > 0) or
-            (source_width - source_height > 0 and self.target_width - self.target_height < 0)
+                    (source_width - source_height < 0 and self.target_width - self.target_height > 0) or
+                    (source_width - source_height > 0 and self.target_width - self.target_height < 0)
         ):
             tmp = self.context.request.width
             self.context.request.width = self.context.request.height

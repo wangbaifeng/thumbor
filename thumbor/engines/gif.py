@@ -17,7 +17,6 @@ import os
 from thumbor.engines.pil import Engine as PILEngine
 from thumbor.utils import logger
 
-
 GIFSICLE_SIZE_REGEX = re.compile(r'(?:logical\sscreen\s(\d+x\d+))')
 GIFSICLE_IMAGE_COUNT_REGEX = re.compile(r'(?:(\d+)\simage)')
 
@@ -25,8 +24,13 @@ GIFSICLE_IMAGE_COUNT_REGEX = re.compile(r'(?:(\d+)\simage)')
 class GifSicleError(RuntimeError):
     pass
 
+
 class Gif2WebpError(RuntimeError):
     pass
+
+class HEIF2JpgError(RuntimeError):
+    pass
+
 
 class Engine(PILEngine):
     @property
@@ -67,7 +71,8 @@ class Engine(PILEngine):
         self.buffer = buffer
         self.image = ''
         self.operations = []
-        self.update_image_info()
+        if self.extension != '.heif':
+            self.update_image_info()
 
     def draw_rectangle(self, x, y, width, height):
         raise NotImplementedError()
@@ -122,9 +127,9 @@ class Engine(PILEngine):
 
         if extension == '.webp':
             if quality is None:
-                quality = self.context.config.QUALITY;
+                quality = self.context.config.QUALITY
 
-            gif_file = NamedTemporaryFile(suffix='.gif', delete=False);
+            gif_file = NamedTemporaryFile(suffix='.gif', delete=False)
             gif_file.write(self.buffer)
             gif_file.close()
 
@@ -143,7 +148,7 @@ class Engine(PILEngine):
                 gif_2_webp_process.communicate()
                 if gif_2_webp_process.returncode != 0:
                     raise Gif2WebpError(
-                        'gif2webp command returned errorlevel {0} for command "{1}"'.format(
+                        'gif2webp command returned error level {0} for command "{1}"'.format(
                             gif_2_webp_process.returncode, ' '.join(
                                 command +
                                 [self.context.request.url]
@@ -155,7 +160,38 @@ class Engine(PILEngine):
             finally:
                 os.unlink(gif_file.name)
                 os.unlink(result_file.name)
+        elif self.extension == '.heif' and extension == '.jpg':
+            heif_file = NamedTemporaryFile(suffix='.heif', delete=False)
+            heif_file.write(self.buffer)
+            heif_file.close()
 
+            output_suffix = '.jpg'
+            result_file = NamedTemporaryFile(suffix=output_suffix, delete=False)
+            try:
+                logger.debug('convert {0} to {1}'.format(heif_file.name, result_file.name))
+                result_file.close()
+                command = [
+                    self.context.config.HEIF2JPEG_PATH,
+                    heif_file.name,
+                    result_file.name
+                ]
+                heif_2_jpg_process = Popen(command, stdout=PIPE, stdin=PIPE, stderr=PIPE)
+                stdout, stderr = heif_2_jpg_process.communicate()
+                if heif_2_jpg_process.returncode != 0:
+                    logger.error('stdout {0} stderr {1}', stdout, stderr)
+                    raise HEIF2JpgError(
+                        'heif2jpg command returned error level {0} for command "{1}"'.format(
+                            heif_2_jpg_process.returncode, ' '.join(
+                                command +
+                                [self.context.request.url]
+                            )
+                        )
+                    )
+                with open(result_file.name, 'r') as f:
+                    return f.read()
+            finally:
+                os.unlink(heif_file.name)
+                os.unlink(result_file.name)
         else:
             self.flush_operations()
 

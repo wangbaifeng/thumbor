@@ -17,6 +17,7 @@ except:
 
 try:
     from pyexiv2 import ImageMetadata
+
     METADATA_AVAILABLE = True
 except ImportError:
     METADATA_AVAILABLE = False
@@ -31,7 +32,6 @@ SVG_RE = re.compile(r'<svg\s[^>]*(["\'])http://www.w3.org/2000/svg\1', re.I)
 
 
 class EngineResult(object):
-
     COULD_NOT_LOAD_IMAGE = 'could not load image'
 
     def __init__(self, buffer_=None, successful=True, error=None, metadata=dict()):
@@ -55,7 +55,6 @@ class EngineResult(object):
 
 
 class MultipleEngine:
-
     def __init__(self, source_engine):
         self.frame_engines = []
         self.source_engine = source_engine
@@ -83,11 +82,11 @@ class MultipleEngine:
             for frame_engine in self.frame_engines:
                 result.append(getattr(frame_engine, name)(*args, **kwargs))
             return result
+
         return exec_func
 
 
 class BaseEngine(object):
-
     def __init__(self, context):
         self.context = context
         self.image = None
@@ -117,6 +116,10 @@ class BaseEngine(object):
             mime = 'image/jp2'
         elif buffer.startswith('\x00\x00\x00 ftyp'):
             mime = 'video/mp4'
+        elif buffer.startswith("ftypmif1", 4) or buffer.startswith("ftypmsf1", 4) \
+                or buffer.startswith("ftypheic", 4) or buffer.startswith("ftypheix", 4) \
+                or buffer.startswith("ftyphevc", 4) or buffer.startswith("ftyphevx", 4):
+            mime = 'image/heif'
         elif buffer.startswith('\x1aE\xdf\xa3'):
             mime = 'video/webm'
         elif buffer.startswith('\x49\x49\x2A\x00') or buffer.startswith('\x4D\x4D\x00\x2A'):
@@ -210,12 +213,12 @@ class BaseEngine(object):
             height_diff = height - self.context.config.MAX_HEIGHT
             if self.context.config.MAX_WIDTH and width_diff > height_diff:
                 height = self.get_proportional_height(
-                        self.context.config.MAX_WIDTH)
+                    self.context.config.MAX_WIDTH)
                 self.resize(self.context.config.MAX_WIDTH, height)
                 return True
             elif self.context.config.MAX_HEIGHT and height_diff > width_diff:
                 width = self.get_proportional_width(
-                        self.context.config.MAX_HEIGHT)
+                    self.context.config.MAX_HEIGHT)
                 self.resize(width, self.context.config.MAX_HEIGHT)
                 return True
 
