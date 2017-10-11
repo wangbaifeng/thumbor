@@ -204,6 +204,7 @@ Config.define('GC_INTERVAL', 60, 'Set garbage collection interval in seconds', '
 Config.define('LOG_LEVEL', 'debug', 'Set log level', 'Log Level')
 Config.define('GIF2WEB_PATH', None, 'Convert a GIF image to WebP', 'Extensibility')
 Config.define('HEIF2JPEG_PATH', None, 'Convert a HEIF image to JPEG', 'Extensibility')
+Config.define('HEIF2JPEG_PATH_QUALITY', 75, 'Convert a HEIF image to JPEG quality', 'Extensibility')
 Config.define('CWEB_PATH', None, 'Google webP conversion tools', 'Extensibility')
 # METRICS OPTIONS
 Config.define('STATSD_HOST', None, 'Host to send statsd instrumentation to', 'Metrics')
