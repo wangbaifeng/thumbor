@@ -176,6 +176,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
         if engine is None:
             if buffer is None:
+                logger.error('buffer is None.')
                 self._error(504)
                 return
 
@@ -185,7 +186,8 @@ class BaseHandler(tornado.web.RequestHandler):
                 if engine.image is None:
                     self._error(400, "This image is damaged!")
                     return
-            except Exception:
+            except Exception as e:
+                logger.error('engine load exception %s.' % e)
                 self._error(504)
                 return
 
